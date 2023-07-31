@@ -590,8 +590,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   c: {fileID: 519420031}
-  allowable_Value: 0.15
-  paintColor: {r: 0, g: 0, b: 0, a: 0.5882353}
+  allowable_Value: 0.2
+  paintColor: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 1}
 --- !u!61 &421423565
 BoxCollider2D:
   m_ObjectHideFlags: 0
