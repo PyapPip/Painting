@@ -1,19 +1,21 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
 public class Painting : MonoBehaviour
 {
     public Camera c;
-    public float allowable_Value;
+    public float allowable_Value;   //í˜ì¸íŠ¸íˆ´ ìƒ‰ ì°¨ì´ í—ˆìš©ì¹˜
     public Color paintColor;
 
     private bool bIsClick;
     private bool bIsCollision;
     private Collider2D col;
-    private Color[,] pixel;         //ÀÌ¹ÌÁöÀÇ ÄÃ·¯°ªÀ» ´ãÀº ¹è¿­
-    private Color referenceColor;
-    private bool[,] vist;
+
+    private Color[,] pixel;         //ì´ë¯¸ì§€ì˜ ì»¬ëŸ¬ê°’ì„ ë‹´ì€ ë°°ì—´
+    private Color referenceColor;   //ë°”ê¿€ ìƒ‰ì˜ ê¸°ì¤€ì 
+    private List<int> openList;     //íƒìƒ‰í•´ì•¼í•˜ëŠ” ì¢Œí‘œ
+    private bool[,] vist;           //ìƒ‰ì„ ë°”ê¿”ì¤„ ì¢Œí‘œ
 
     private void Start()
     {
@@ -40,8 +42,8 @@ public class Painting : MonoBehaviour
 
     private void painting(GameObject gameObject)
     {
-        //ÀÌ¹ÌÁöÀÇ Áß½É a, °¡Àå °¡±î¿î ²ÀÁşÁ¡ b, ¸¶¿ì½º Æ÷ÀÎÅÍÀÇ À§Ä¡ c
-        //¸¶¿ì½ºÁÂÇ¥-(Å¸°Ù ÁÂÇ¥-(Å¸°Ù Å©±â))/Å¸°Ù Å©±â = Å¬¸¯ÇÑ ÀÌ¹ÌÁöÀÇ ÇÈ¼¿ À§Ä¡(%)
+        //ì´ë¯¸ì§€ì˜ ì¤‘ì‹¬ a, ê°€ì¥ ê°€ê¹Œìš´ ê¼­ì§“ì  b, ë§ˆìš°ìŠ¤ í¬ì¸í„°ì˜ ìœ„ì¹˜ c
+        //ë§ˆìš°ìŠ¤ì¢Œí‘œ-(íƒ€ê²Ÿ ì¢Œí‘œ-(íƒ€ê²Ÿ í¬ê¸°))/íƒ€ê²Ÿ í¬ê¸° = í´ë¦­í•œ ì´ë¯¸ì§€ì˜ í”½ì…€ ìœ„ì¹˜(%)
 
         Vector2 imagePos = gameObject.transform.position;
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -55,7 +57,7 @@ public class Painting : MonoBehaviour
         Sprite blankSprite = Sprite.Create(blankTexture, new Rect(0, 0, targetTexture.width, targetTexture.height), new Vector2(0.5f, 0.5f));
         gameObject.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = blankSprite;
 
-        //ÀÌ¹ÌÁöÀÇ ÇÈ¼¿ x,y ÁÂÇ¥ ±¸ºĞÇÏ¿© ÀúÀå
+        //ì´ë¯¸ì§€ì˜ í”½ì…€ x,y ì¢Œí‘œ êµ¬ë¶„í•˜ì—¬ ì €ì¥
         Color[] colorArr = target.GetComponent<SpriteRenderer>().sprite.texture.GetPixels(0);
         int count = 0;
         for (int y = 0; y < target.GetComponent<SpriteRenderer>().sprite.texture.height; y++)
@@ -90,52 +92,51 @@ public class Painting : MonoBehaviour
 
     private void bfs(int _x, int _y)
     {
-        List<int> openList = new List<int>();
+        openList = new List<int>();
         openList.Add(_x);
         openList.Add(_y);
         vist[_x, _y] = true;
 
+        //ë¬´í•œë£¨í”„ ì˜ˆì™¸ì²˜ë¦¬ìš© ë³€ìˆ˜
         int count = 0;
 
         while (openList.Count > 0)
         {
-            if (openList[0] > 0 && vist[openList[0] - 1, openList[1]] == false && allowable_Value >= colorComparison(pixel[openList[0] - 1, openList[1]]))
-            {
-                vist[openList[0] - 1, openList[1]] = true;
-                openList.Add(openList[0] - 1);
-                openList.Add(openList[1]);
-            }
-            if (openList[1] > 0 && vist[openList[0], openList[1] - 1] == false && allowable_Value >= colorComparison(pixel[openList[0], openList[1] - 1]))
-            {
-                vist[openList[0], openList[1] - 1] = true;
-                openList.Add(openList[0]);
-                openList.Add(openList[1] - 1);
-            }
-            if (openList[0] < pixel.GetLength(0) - 1 && vist[openList[0] + 1, openList[1]] == false && allowable_Value >= colorComparison(pixel[openList[0] + 1, openList[1]]))
-            {
-                vist[openList[0] + 1, openList[1]] = true;
-                openList.Add(openList[0] + 1);
-                openList.Add(openList[1]);
-            }
-            if (openList[1] < pixel.GetLength(1) - 1 && vist[openList[0], openList[1] + 1] == false && allowable_Value >= colorComparison(pixel[openList[0], openList[1] + 1]))
-            {
-                vist[openList[0], openList[1] + 1] = true;
-                openList.Add(openList[0]);
-                openList.Add(openList[1] + 1);
-            }
+            explore(openList[0] - 1, openList[1]);
+            explore(openList[0], openList[1] - 1);
+            explore(openList[0] + 1, openList[1]);
+            explore(openList[0], openList[1] + 1);
 
             count++;
 
-            if (count > 10000000)
+            //ì´ë¯¸ì§€ ì‚¬ì´ì¦ˆë³´ë‹¤ íƒìƒ‰ì´ ê¸¸ë•Œì˜ ì˜ˆì™¸ì²˜ë¦¬
+            if (count > pixel.GetLength(0) * pixel.GetLength(1))
             {
-                Debug.Log(openList.Count);
                 break;
             }
+            
+
             openList.RemoveAt(0);
             openList.RemoveAt(0);
         }
+
+        openList.Clear();
     }
 
+    //íƒìƒ‰
+    private void explore(int _x, int _y)
+    {
+        if (colorComparison(pixel[_x, _y]) > allowable_Value || _x <= 0 || _y <= 0 || _x >= pixel.GetLength(0) || _y >= pixel.GetLength(1))
+        { return; }
+
+        vist[_x, _y] = true;
+        openList.Add(_x);
+        openList.Add(_y);
+
+        return;
+    }
+
+    //ì‹œì‘ì ì˜ ìƒ‰ê³¼ ë¹„êµ
     private float colorComparison(Color _c)
     {
         return math.abs(_c.r - referenceColor.r) + math.abs(_c.g - referenceColor.g) + math.abs(_c.b - referenceColor.b) + math.abs(_c.a - referenceColor.a);
