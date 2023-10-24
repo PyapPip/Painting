@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -126,7 +126,7 @@ public class Painting : MonoBehaviour
     //탐색
     private void explore(int _x, int _y)
     {
-        if (colorComparison(pixel[_x, _y]) > allowable_Value || _x <= 0 || _y <= 0 || _x >= pixel.GetLength(0) || _y >= pixel.GetLength(1))
+        if (colorComparison(pixel[_x, _y]) > allowable_Value || _x <= 0 || _y <= 0 || _x >= pixel.GetLength(0) - 1 || _y >= pixel.GetLength(1) - 1 || vist[_x, _y])
         { return; }
 
         vist[_x, _y] = true;
